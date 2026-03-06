@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StumbleAround</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --or:#E8632A;--ord:#c94e18;--bg:#f0ede8;--dark:#1a1a2e;
+  --border:#d0ccc4;--tb:#2d2d2d;--gr:#4caf50;--re:#e53935;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;overflow:hidden;}
+
+#toolbar{
+  background:var(--tb);padding:0 16px;height:52px;
+  display:flex;align-items:center;gap:10px;
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  box-shadow:0 2px 10px rgba(0,0,0,.5);
+}
+.logo{font-family:'Space Mono',monospace;font-weight:700;font-size:18px;color:var(--or);letter-spacing:-1px;white-space:nowrap;}
+.logo span{color:#fff;}
+.sbtn{
+  background:linear-gradient(135deg,var(--or),var(--ord));color:#fff;border:none;
+  padding:8px 22px;border-radius:24px;font-family:'Nunito',sans-serif;font-weight:900;
+  font-size:15px;cursor:pointer;box-shadow:0 3px 0 #8b3410;position:relative;top:0;
+  white-space:nowrap;transition:all .12s;
+}
+.sbtn:hover{filter:brightness(1.08);}
+.sbtn:active{top:3px;box-shadow:0 0 0 #8b3410;}
+.sbtn:disabled{opacity:.35;cursor:not-allowed;}
+.sbtn.pop{animation:pop .35s ease;}
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(.88) rotate(-3deg)}65%{transform:scale(1.1) rotate(2deg)}100%{transform:scale(1)}}
+
+.vbtn{background:none;border:2px solid #4a4a4a;color:#aaa;padding:5px 13px;border-radius:20px;font-size:16px;cursor:pointer;transition:all .12s;}
+.vbtn.lk:hover,.vbtn.lk.on{border-color:var(--gr);color:var(--gr);background:rgba(76,175,80,.08);}
+.vbtn.dk:hover,.vbtn.dk.on{border-color:var(--re);color:var(--re);background:rgba(229,57,53,.08);}
+
+#cpill{background:rgba(232,99,42,.18);color:var(--or);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase;white-space:nowrap;}
+#counter{font-size:11px;color:#666;font-family:'Space Mono',monospace;white-space:nowrap;}
+.tb-info{flex:1;overflow:hidden;padding:0 6px;}
+.tb-title{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-url{font-size:10px;color:#777;font-family:'Space Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-space{flex:1;}
+.mbtn2{background:none;border:1px solid #4a4a4a;color:#aaa;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Nunito',sans-serif;font-weight:700;transition:all .12s;}
+.mbtn2:hover{border-color:var(--or);color:var(--or);}
+.openbtn{background:none;border:1px solid #4a4a4a;color:#aaa;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Nunito',sans-serif;font-weight:700;transition:all .12s;}
+.openbtn:hover{border-color:var(--or);color:var(--or);}
+
+#main{padding-top:52px;height:100vh;display:flex;flex-direction:column;}
+
+/* WELCOME */
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 20px;text-align:center;overflow-y:auto;}
+.wlogo{font-family:'Space Mono',monospace;font-size:clamp(28px,6vw,60px);font-weight:700;color:var(--or);letter-spacing:-2px;line-height:1;margin-bottom:8px;}
+.wlogo span{color:var(--dark);}
+.wsub{font-size:15px;color:#777;margin-bottom:28px;font-weight:600;}
+.wtitle{font-size:12px;font-weight:800;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;}
+.tgrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:680px;margin-bottom:28px;}
+.tag{padding:7px 16px;border-radius:50px;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:13px;font-weight:700;color:#666;transition:all .18s;user-select:none;}
+.tag:hover{border-color:var(--or);color:var(--or);transform:translateY(-1px);}
+.tag.on{background:var(--or);border-color:var(--or);color:#fff;box-shadow:0 3px 10px rgba(232,99,42,.35);transform:translateY(-2px);}
+.tag.cust{border-style:dashed;}
+.tag.cust.on{border-style:solid;}
+.addtag{padding:7px 16px;border-radius:50px;border:2px dashed #bbb;background:transparent;cursor:pointer;font-size:13px;font-weight:700;color:#aaa;transition:all .18s;}
+.addtag:hover{border-color:var(--or);color:var(--or);}
+.stbtn{background:linear-gradient(135deg,var(--or),var(--ord));color:#fff;border:none;padding:14px 44px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;cursor:pointer;box-shadow:0 5px 0 #8b3410,0 8px 18px rgba(232,99,42,.35);transition:all .12s;position:relative;top:0;}
+.stbtn:hover{filter:brightness(1.08);}
+.stbtn:active{top:5px;box-shadow:0 0 0 #8b3410;}
+.stbtn:disabled{opacity:.38;cursor:not-allowed;}
+
+/* BROWSER */
+#browser{display:none;flex:1;position:relative;}
+
+/* LOADING */
+#loading{
+  position:absolute;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  z-index:10;
+}
+#loading.hid{display:none;}
+.spinner{width:50px;height:50px;border:4px solid var(--border);border-top-color:var(--or);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.l-name{font-size:20px;font-weight:900;color:var(--dark);}
+.l-cat{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--or);}
+.l-url{font-size:11px;color:#aaa;font-family:'Space Mono',monospace;}
+
+/* BLOCKED */
+#blocked{
+  position:absolute;inset:0;background:var(--bg);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;z-index:10;text-align:center;padding:40px;
+}
+.bl-icon{font-size:54px;}
+.bl-title{font-size:21px;font-weight:900;color:var(--dark);}
+.bl-sub{font-size:14px;color:#888;max-width:360px;font-weight:600;line-height:1.5;}
+.bl-acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px;}
+.blbtn{padding:10px 24px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;border:none;transition:all .12s;}
+.blbtn.p{background:linear-gradient(135deg,var(--or),var(--ord));color:#fff;box-shadow:0 3px 0 #8b3410;position:relative;top:0;}
+.blbtn.p:active{top:3px;box-shadow:none;}
+.blbtn.s{background:#fff;color:#444;border:2px solid var(--border);}
+.blbtn.s:hover{border-color:var(--or);color:var(--or);}
+
+/* IFRAME */
+#frame{width:100%;height:100%;border:none;display:block;}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;backdrop-filter:blur(5px);}
+.ov.hid{display:none;}
+.modal{background:#fff;border-radius:20px;padding:28px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.2);animation:min .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes min{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{font-size:20px;font-weight:900;color:var(--dark);margin-bottom:4px;}
+.msub{font-size:13px;color:#aaa;margin-bottom:18px;font-weight:600;}
+.fg{margin-bottom:13px;}
+.fg label{display:block;font-size:11px;font-weight:800;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.fg input,.fg textarea{width:100%;padding:9px 13px;border:2px solid var(--border);border-radius:10px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--dark);background:#fafafa;outline:none;transition:border .12s;}
+.fg input:focus,.fg textarea:focus{border-color:var(--or);background:#fff;}
+.fg textarea{resize:vertical;min-height:100px;}
+.fnote{font-size:11px;color:#ccc;margin-top:4px;font-weight:600;}
+.erow{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.eopt{font-size:20px;cursor:pointer;padding:4px;border-radius:6px;border:2px solid transparent;transition:all .12s;}
+.eopt:hover{background:#f0f0f0;}
+.eopt.on{background:rgba(232,99,42,.1);border-color:var(--or);}
+.mact{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+.mb{padding:9px 22px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;border:none;transition:all .12s;}
+.mb.cx{background:#f0f0f0;color:#888;}.mb.cx:hover{background:#e3e3e3;}
+.mb.sv{background:var(--or);color:#fff;}.mb.sv:hover{background:var(--ord);}
+.ccitem{display:flex;align-items:center;gap:10px;padding:9px 13px;background:#fafafa;border:1px solid var(--border);border-radius:10px;margin-bottom:7px;}
+.cci{flex:1;}.ccn{font-weight:800;color:var(--dark);font-size:13px;}.ccc{font-size:11px;color:#ccc;font-weight:600;}
+.delbtn{background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:4px 6px;border-radius:6px;transition:all .12s;}
+.delbtn:hover{color:var(--re);background:rgba(229,57,53,.08);}
+.nocc{color:#ccc;font-size:13px;text-align:center;padding:16px;font-weight:600;}
+.cfg-box{background:#fafafa;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;}
+.cfg-box label{font-size:12px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:8px;}
+.cfg-box input{width:100%;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-family:'Space Mono',monospace;font-size:12px;color:var(--dark);background:#fff;outline:none;transition:border .12s;}
+.cfg-box input:focus{border-color:var(--or);}
+.cfg-note{font-size:11px;color:#aaa;margin-top:5px;font-weight:600;line-height:1.5;}
+
+@media(max-width:640px){
+  .tb-info,#counter,#cpill,.openbtn{display:none !important;}
+}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <div class="logo">Stumble<span>Around</span></div>
+  <button class="sbtn" id="sb" onclick="stumble()" disabled>✦ Stumble!</button>
+  <button class="vbtn dk" id="dbtn" onclick="vote('dk')" style="display:none">👎</button>
+  <button class="vbtn lk" id="lbtn" onclick="vote('lk')" style="display:none">👍</button>
+  <span id="cpill" style="display:none"></span>
+  <div class="tb-info" id="tbinfo" style="display:none">
+    <div class="tb-title" id="tbtitle">—</div>
+    <div class="tb-url" id="tburl">—</div>
+  </div>
+  <span id="counter" style="display:none">#0</span>
+  <div class="tb-space"></div>
+  <button class="openbtn" id="openbtn" onclick="openTab()" style="display:none">↗ Nueva pestaña</button>
+  <button class="mbtn2" onclick="openManage()">⚙ Categorías</button>
+</div>
+
+<div id="main">
+  <!-- WELCOME -->
+  <div id="welcome">
+    <div class="wlogo">Stumble<span>Around</span></div>
+    <div class="wsub">Descubre el internet. Un sitio a la vez.</div>
+    <div class="wtitle">Elige tus intereses</div>
+    <div class="tgrid" id="tgrid"></div>
+    <button class="stbtn" id="stbtn" onclick="startApp()" disabled>✦ ¡Empezar a Stumblear!</button>
+  </div>
+
+  <!-- BROWSER -->
+  <div id="browser">
+    <div id="loading">
+      <div class="spinner"></div>
+      <div class="l-cat" id="lcat"></div>
+      <div class="l-name" id="lname"></div>
+      <div class="l-url" id="lurl"></div>
+    </div>
+    <div id="blocked">
+      <div class="bl-icon">🔒</div>
+      <div class="bl-title" id="bltitle">Sitio bloqueado</div>
+      <div class="bl-sub" id="blsub">Este sitio no permite mostrarse aquí, pero puedes abrirlo en una pestaña nueva.</div>
+      <div class="bl-acts">
+        <button class="blbtn s" onclick="stumble()">✦ Próximo Stumble</button>
+        <button class="blbtn p" onclick="openTab()">↗ Abrir en pestaña</button>
+      </div>
+    </div>
+    <iframe id="frame" title="StumbleAround"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox">
+    </iframe>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="ov hid" id="addM">
+  <div class="modal">
+    <h2>✦ Nueva Categoría</h2>
+    <p class="msub">Crea tu propia categoría con los sitios que quieras.</p>
+    <div class="fg"><label>Nombre</label><input type="text" id="nn" placeholder="Ej: Cocina, Deportes, Viajes..." maxlength="30"></div>
+    <div class="fg"><label>Ícono</label><div class="erow" id="epick"></div></div>
+    <div class="fg">
+      <label>Sitios web (uno por línea)</label>
+      <textarea id="ns" placeholder="Solo la URL o: Nombre | URL&#10;&#10;Ejemplos:&#10;Mi Blog | https://miblog.com&#10;https://xataka.com"></textarea>
+      <div class="fnote">Agrega 3 o más sitios.</div>
+    </div>
+    <div class="mact"><button class="mb cx" onclick="closeAdd()">Cancelar</button><button class="mb sv" onclick="savecat()">✦ Guardar</button></div>
+  </div>
+</div>
+
+<!-- MANAGE MODAL -->
+<div class="ov hid" id="manM">
+  <div class="modal">
+    <h2>⚙ Gestionar Categorías</h2>
+    <p class="msub">Configura el proxy y tus categorías personalizadas.</p>
+
+    <div class="cfg-box">
+      <label>🔗 URL del Proxy (backend)</label>
+      <input type="text" id="proxyUrl" placeholder="https://tu-app.onrender.com" oninput="saveProxy()">
+      <div class="cfg-note">
+        Ingresa la URL de tu backend en Render. Sin esto, los sitios no se podrán mostrar dentro de la app.<br>
+        <strong>Ejemplo:</strong> https://stumblearound-proxy.onrender.com
+      </div>
+    </div>
+
+    <div id="ccl"></div>
+    <button class="mb sv" style="width:100%;text-align:center;margin-bottom:6px" onclick="closeManage();openAdd()">+ Agregar nueva categoría</button>
+    <div class="mact" style="margin-top:8px"><button class="mb cx" onclick="closeManage()">Cerrar</button></div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────
+// Default proxy URL — user can change in settings
+let PROXY_URL = localStorage.getItem('sa_proxy') || '';
+
+const EMOJIS=['🌍','🚀','🎭','🍕','⚽','🎸','📚','🎮','💡','🔮','🌊','🦁','🏔','🎨','🌸','🦋','🍜','🏆','🎯','🧪','🌙','🎪','🔥','💎','🧩','🌈','🎬','🎵','👻','📷','🌮','🏋️','✈️','🐾','🎤','🖥️','🌺','🎻','🧠','⚡'];
+
+const BASE={
+  "Tecnología":{emoji:"💻",sites:[
+    {name:"Xataka",url:"https://www.xataka.com",desc:"El medio de tecnología más importante en español."},
+    {name:"Genbeta",url:"https://www.genbeta.com",desc:"Software, apps y consejos tecnológicos en español."},
+    {name:"FayerWayer",url:"https://www.fayerwayer.com",desc:"Tecnología e innovación desde América Latina."},
+    {name:"Hipertextual",url:"https://hipertextual.com",desc:"Tecnología, ciencia y cultura digital en español."},
+    {name:"Andro4all",url:"https://andro4all.com",desc:"Android, apps y gadgets en español."},
+    {name:"Muy Computer",url:"https://www.muycomputer.com",desc:"Hardware, software y tecnología en español."},
+    {name:"The Verge",url:"https://www.theverge.com",desc:"Tecnología y cultura digital de vanguardia."},
+    {name:"Wired",url:"https://www.wired.com",desc:"Tecnología, ciencia y cultura en profundidad."},
+    {name:"Hacker News",url:"https://news.ycombinator.com",desc:"Comunidad de startups y programación."},
+    {name:"Ars Technica",url:"https://arstechnica.com",desc:"Análisis técnico profundo sobre tecnología."},
+    {name:"Dev.to",url:"https://dev.to",desc:"Comunidad de desarrolladores compartiendo ideas."},
+    {name:"Product Hunt",url:"https://www.producthunt.com",desc:"Los productos y apps más nuevos del mundo tech."},
+  ]},
+  "Ciencia":{emoji:"🔬",sites:[
+    {name:"Muy Interesante",url:"https://www.muyinteresante.es",desc:"Ciencia, naturaleza y curiosidades en español."},
+    {name:"Naukas",url:"https://naukas.com",desc:"Divulgación científica de calidad en español."},
+    {name:"Agencia SINC",url:"https://www.agenciasinc.es",desc:"Noticias científicas en español."},
+    {name:"NASA",url:"https://www.nasa.gov",desc:"Exploración espacial y las últimas misiones."},
+    {name:"Quanta Magazine",url:"https://www.quantamagazine.org",desc:"Matemáticas y ciencias de frontera."},
+    {name:"IFL Science",url:"https://www.iflscience.com",desc:"Ciencia fascinante con humor y asombro."},
+    {name:"Scientific American",url:"https://www.scientificamerican.com",desc:"Ciencia para todos."},
+    {name:"Space.com",url:"https://www.space.com",desc:"Todo sobre el espacio y astronomía."},
+  ]},
+  "Arte & Diseño":{emoji:"🎨",sites:[
+    {name:"Domestika",url:"https://www.domestika.org",desc:"La comunidad creativa más grande en español."},
+    {name:"Yorokobu",url:"https://www.yorokobu.es",desc:"Tendencias, diseño y cultura visual en español."},
+    {name:"Jot Down",url:"https://www.jotdown.es",desc:"Cultura, arte y entrevistas largas en español."},
+    {name:"Behance",url:"https://www.behance.net",desc:"Los mejores portfolios creativos del mundo."},
+    {name:"Dribbble",url:"https://dribbble.com",desc:"Comunidad de diseñadores de todo el mundo."},
+    {name:"Colossal",url:"https://www.thisiscolossal.com",desc:"Arte y creatividad visual del planeta."},
+    {name:"Awwwards",url:"https://www.awwwards.com",desc:"Los mejores sitios web premiados."},
+    {name:"Dezeen",url:"https://www.dezeen.com",desc:"Arquitectura y diseño de producto."},
+  ]},
+  "Cine & Series":{emoji:"🎬",sites:[
+    {name:"SensaCine",url:"https://www.sensacine.com",desc:"El portal de cine más completo en español."},
+    {name:"Espinof",url:"https://www.espinof.com",desc:"Cine y series con pasión en español."},
+    {name:"Cinemanía",url:"https://www.cinemania.es",desc:"La revista de cine más leída en España."},
+    {name:"Blogdecine",url:"https://www.blogdecine.com",desc:"Crítica de cine y series en español."},
+    {name:"Roger Ebert",url:"https://www.rogerebert.com",desc:"El legado del mayor crítico de cine."},
+    {name:"Letterboxd",url:"https://letterboxd.com",desc:"Red social para cinéfilos del mundo."},
+    {name:"IndieWire",url:"https://www.indiewire.com",desc:"Cine independiente y televisión de calidad."},
+    {name:"The A.V. Club",url:"https://www.avclub.com",desc:"Crítica cultural: cine, series y música."},
+  ]},
+  "Música":{emoji:"🎵",sites:[
+    {name:"Mondosonoro",url:"https://www.mondosonoro.com",desc:"La revista de música indie más importante en español."},
+    {name:"Jenesaispop",url:"https://www.jenesaispop.com",desc:"Música pop e indie en español con estilo."},
+    {name:"Rockdelux",url:"https://www.rockdelux.com",desc:"La biblia del rock en español desde 1984."},
+    {name:"PlayGround",url:"https://www.playgroundmag.net",desc:"Música electrónica y cultura alternativa."},
+    {name:"Pitchfork",url:"https://pitchfork.com",desc:"La revista musical más influyente en indie."},
+    {name:"Bandcamp Daily",url:"https://daily.bandcamp.com",desc:"Música independiente de todo el mundo."},
+    {name:"Resident Advisor",url:"https://ra.co",desc:"Música electrónica y cultura de clubes."},
+    {name:"NME",url:"https://www.nme.com",desc:"Rock, pop e indie."},
+  ]},
+  "Gaming":{emoji:"🎮",sites:[
+    {name:"Vandal",url:"https://vandal.elespanol.com",desc:"El portal de videojuegos más visitado en español."},
+    {name:"3DJuegos",url:"https://www.3djuegos.com",desc:"Análisis y noticias de videojuegos en español."},
+    {name:"MeriStation",url:"https://as.com/meristation",desc:"Videojuegos con análisis en profundidad en español."},
+    {name:"Hobby Consolas",url:"https://www.hobbyconsolas.com",desc:"La revista de videojuegos más antigua de España."},
+    {name:"Kotaku",url:"https://kotaku.com",desc:"Videojuegos: noticias, críticas y cultura gamer."},
+    {name:"Rock Paper Shotgun",url:"https://www.rockpapershotgun.com",desc:"Los mejores juegos de PC."},
+    {name:"Polygon",url:"https://www.polygon.com",desc:"Videojuegos y entretenimiento moderno."},
+    {name:"PC Gamer",url:"https://www.pcgamer.com",desc:"Todo sobre los juegos de PC."},
+  ]},
+  "Historia":{emoji:"📜",sites:[
+    {name:"Historia National Geographic",url:"https://historia.nationalgeographic.com.es",desc:"Historia universal con grandes relatos en español."},
+    {name:"El Orden Mundial",url:"https://elordenmundial.com",desc:"Geopolítica e historia contemporánea en español."},
+    {name:"Historias de la Historia",url:"https://historiasdelahistoria.com",desc:"Anécdotas y curiosidades históricas en español."},
+    {name:"World History Encyclopedia",url:"https://www.worldhistory.org",desc:"Enciclopedia de historia con artículos expertos."},
+    {name:"Atlas Obscura",url:"https://www.atlasobscura.com",desc:"Los lugares más extraños del mundo."},
+    {name:"Smithsonian Magazine",url:"https://www.smithsonianmag.com",desc:"Historia, ciencia y arte con rigor."},
+    {name:"JSTOR Daily",url:"https://daily.jstor.org",desc:"Historia con investigación académica."},
+    {name:"Mental Floss",url:"https://www.mentalfloss.com",desc:"Historia curiosa y cultura entretenida."},
+  ]},
+  "Humor & Memes":{emoji:"😂",sites:[
+    {name:"El Mundo Today",url:"https://www.elmundotoday.com",desc:"El periódico satírico más divertido en español."},
+    {name:"Mongolia",url:"https://www.revistamongolia.com",desc:"Sátira política y humor ácido en español."},
+    {name:"Meneame",url:"https://www.meneame.net",desc:"Noticias votadas por la comunidad hispanohablante."},
+    {name:"The Onion",url:"https://www.theonion.com",desc:"El periódico satírico más famoso del mundo."},
+    {name:"Know Your Meme",url:"https://knowyourmeme.com",desc:"La enciclopedia definitiva de los memes."},
+    {name:"McSweeney's",url:"https://www.mcsweeneys.net",desc:"Humor literario inteligente."},
+    {name:"Cracked",url:"https://www.cracked.com",desc:"Listas absurdas y humor sobre cultura pop."},
+    {name:"ClickHole",url:"https://www.clickhole.com",desc:"Sátira del clickbait al extremo."},
+  ]},
+  "Fotografía":{emoji:"📷",sites:[
+    {name:"Xatakafoto",url:"https://www.xatakafoto.com",desc:"Fotografía, cámaras y técnicas en español."},
+    {name:"500px",url:"https://500px.com",desc:"Las fotografías más impresionantes del mundo."},
+    {name:"Magnum Photos",url:"https://www.magnumphotos.com",desc:"La agencia fotográfica más legendaria."},
+    {name:"Lens Culture",url:"https://www.lensculture.com",desc:"Fotografía contemporánea y fotoperiodismo."},
+    {name:"PetaPixel",url:"https://petapixel.com",desc:"Noticias y tutoriales de fotografía."},
+    {name:"Feature Shoot",url:"https://www.featureshoot.com",desc:"Fotógrafos emergentes y proyectos únicos."},
+    {name:"Flickr Explore",url:"https://www.flickr.com/explore",desc:"Lo mejor de la comunidad Flickr."},
+    {name:"1x.com",url:"https://1x.com",desc:"Fotografía fine art curada por expertos."},
+  ]},
+  "Naturaleza":{emoji:"🌿",sites:[
+    {name:"National Geographic ES",url:"https://www.nationalgeographic.com.es",desc:"Naturaleza, ciencia y exploración en español."},
+    {name:"WWF España",url:"https://www.wwf.es",desc:"Conservación de la naturaleza y medioambiente."},
+    {name:"Ecoosfera",url:"https://ecoosfera.com",desc:"Medio ambiente, naturaleza y sustentabilidad."},
+    {name:"BBC Earth",url:"https://www.bbcearth.com",desc:"Naturaleza y vida silvestre con calidad BBC."},
+    {name:"Mongabay",url:"https://news.mongabay.com",desc:"Conservación y medioambiente global."},
+    {name:"Earth Sky",url:"https://earthsky.org",desc:"Astronomía y naturaleza cotidiana."},
+    {name:"National Geographic Animals",url:"https://www.nationalgeographic.com/animals",desc:"Animales de todo el mundo."},
+    {name:"Audubon Society",url:"https://www.audubon.org",desc:"Conservación de aves en Norteamérica."},
+  ]},
+  "Horror":{emoji:"👻",sites:[
+    {name:"De Película Horror",url:"https://depeliculahorror.com",desc:"Todo el cine de terror en español."},
+    {name:"Terror en Serie",url:"https://terrorenserie.com",desc:"Series de terror en español."},
+    {name:"Zona de Terror",url:"https://www.zonadeterror.com",desc:"Reseñas del horror en español."},
+    {name:"Bloody Disgusting",url:"https://bloody-disgusting.com",desc:"El sitio más grande de cine de terror."},
+    {name:"Dread Central",url:"https://www.dreadcentral.com",desc:"Noticias del horror cinematográfico."},
+    {name:"Fangoria",url:"https://www.fangoria.com",desc:"La revista de terror más icónica desde 1979."},
+    {name:"Creepy Catalog",url:"https://creepycatalog.com",desc:"Historias de terror y fenómenos paranormales."},
+    {name:"Nightmare on Film Street",url:"https://nightmareonfilmstreet.com",desc:"El amor por el cine de terror."},
+  ]},
+};
+
+// STATE
+let custom={},sel=new Set(),count=0,current=null,cvote=null,selE='🌍';
+let loadTimer=null;
+try{custom=JSON.parse(localStorage.getItem('sa_c')||'{}');}catch(e){}
+try{sel=new Set(JSON.parse(localStorage.getItem('sa_s')||'[]'));}catch(e){}
+
+const all=()=>({...BASE,...custom});
+
+// TAGS
+function renderTags(){
+  const g=document.getElementById('tgrid');g.innerHTML='';
+  Object.entries(all()).forEach(([name,data])=>{
+    const t=document.createElement('div');
+    t.className='tag'+(custom[name]?' cust':'')+(sel.has(name)?' on':'');
+    t.textContent=data.emoji+' '+name;
+    t.onclick=()=>{
+      sel.has(name)?sel.delete(name):sel.add(name);
+      try{localStorage.setItem('sa_s',JSON.stringify([...sel]));}catch(e){}
+      renderTags();chk();
+    };
+    g.appendChild(t);
+  });
+  const a=document.createElement('div');a.className='addtag';a.textContent='＋ Nueva categoría';a.onclick=openAdd;
+  g.appendChild(a);chk();
+}
+function chk(){
+  const ok=sel.size>0;
+  document.getElementById('stbtn').disabled=!ok;
+  document.getElementById('sb').disabled=!ok;
+}
+renderTags();
+
+// STUMBLE ENGINE
+function getRnd(){
+  const cats=[...sel].filter(c=>all()[c]);if(!cats.length)return null;
+  const a=all();let s,c,n=0;
+  do{
+    c=cats[Math.floor(Math.random()*cats.length)];
+    const ss=a[c].sites;s=ss[Math.floor(Math.random()*ss.length)];n++;
+  }while(current&&s.url===current.url&&n<15);
+  return{...s,category:c,emoji:a[c].emoji};
+}
+
+function startApp(){
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('browser').style.display='block';
+  ['dbtn','lbtn','cpill','tbinfo','counter','openbtn'].forEach(id=>{
+    document.getElementById(id).style.display='';
+  });
+  stumble();
+}
+
+function stumble(){
+  const s=getRnd();if(!s)return;
+  current=s;cvote=null;count++;
+
+  // Animate button
+  const btn=document.getElementById('sb');btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');
+
+  // Reset votes
+  document.getElementById('lbtn').className='vbtn lk';
+  document.getElementById('dbtn').className='vbtn dk';
+
+  // Toolbar
+  document.getElementById('cpill').textContent=s.emoji+' '+s.category;
+  document.getElementById('tbtitle').textContent=s.name;
+  document.getElementById('tburl').textContent=s.url.replace(/https?:\/\//,'').replace(/\/$/,'');
+  document.getElementById('counter').textContent='#'+count;
+
+  // Loading screen
+  showLoading(s);
+
+  // Load via proxy or direct
+  loadPage(s);
+}
+
+function showLoading(s){
+  document.getElementById('lcat').textContent=s.emoji+' '+s.category;
+  document.getElementById('lname').textContent=s.name;
+  document.getElementById('lurl').textContent=s.url.replace(/https?:\/\//,'').replace(/\/$/,'');
+  document.getElementById('loading').classList.remove('hid');
+  document.getElementById('blocked').style.display='none';
+  document.getElementById('frame').src='about:blank';
+}
+
+function loadPage(s){
+  clearTimeout(loadTimer);
+  const frame=document.getElementById('frame');
+
+  let src;
+  if(PROXY_URL){
+    // Use our proxy backend
+    src=`${PROXY_URL.replace(/\/$/,'')}/proxy?url=${encodeURIComponent(s.url)}`;
+  } else {
+    // Try direct (will likely be blocked by X-Frame-Options)
+    src=s.url;
+  }
+
+  frame.src=src;
+
+  // Timeout fallback after 10s
+  loadTimer=setTimeout(()=>{
+    // Check if frame has content
+    let ok=false;
+    try{
+      const doc=frame.contentDocument;
+      ok=doc&&doc.body&&doc.body.innerHTML.length>100;
+    }catch(e){ok=true;} // cross-origin = likely loaded ok
+
+    if(!ok){showBlocked(s);}
+    else{document.getElementById('loading').classList.add('hid');}
+  },10000);
+
+  frame.onload=()=>{
+    clearTimeout(loadTimer);
+    setTimeout(()=>{
+      let ok=false;
+      try{
+        const doc=frame.contentDocument;
+        ok=doc&&doc.body&&doc.body.innerHTML.length>200;
+      }catch(e){ok=true;}
+      if(ok){
+        document.getElementById('loading').classList.add('hid');
+        document.getElementById('blocked').style.display='none';
+      }else{showBlocked(s);}
+    },600);
+  };
+
+  frame.onerror=()=>{
+    clearTimeout(loadTimer);
+    showBlocked(s);
+  };
+}
+
+function showBlocked(s){
+  clearTimeout(loadTimer);
+  document.getElementById('loading').classList.add('hid');
+  const bl=document.getElementById('blocked');
+  document.getElementById('bltitle').textContent=s.name+' no se puede mostrar aquí';
+  document.getElementById('blsub').textContent=PROXY_URL
+    ?'Este sitio tiene protecciones especiales que bloquean incluso los proxies. Ábrelo en una pestaña nueva.'
+    :'No has configurado el proxy todavía. Ve a ⚙ Categorías → URL del Proxy, o abre el sitio en una pestaña nueva.';
+  bl.style.display='flex';bl.style.flexDirection='column';
+}
+
+function openTab(){if(current)window.open(current.url,'_blank');}
+
+function vote(type){
+  if(cvote===type){
+    cvote=null;
+    document.getElementById('lbtn').className='vbtn lk';
+    document.getElementById('dbtn').className='vbtn dk';
+    return;
+  }
+  cvote=type;
+  if(type==='lk'){
+    document.getElementById('lbtn').className='vbtn lk on';
+    document.getElementById('dbtn').className='vbtn dk';
+  }else{
+    document.getElementById('lbtn').className='vbtn lk';
+    document.getElementById('dbtn').className='vbtn dk on';
+    setTimeout(stumble,550);
+  }
+}
+
+// EMOJI
+function renderEmojis(){
+  const r=document.getElementById('epick');r.innerHTML='';
+  EMOJIS.forEach(e=>{
+    const s=document.createElement('span');s.className='eopt'+(e===selE?' on':'');
+    s.textContent=e;s.onclick=()=>{selE=e;renderEmojis();};r.appendChild(s);
+  });
+}
+
+// ADD MODAL
+function openAdd(){selE='🌍';document.getElementById('nn').value='';document.getElementById('ns').value='';renderEmojis();document.getElementById('addM').classList.remove('hid');}
+function closeAdd(){document.getElementById('addM').classList.add('hid');}
+function savecat(){
+  const name=document.getElementById('nn').value.trim();
+  const raw=document.getElementById('ns').value.trim();
+  if(!name){alert('Dale un nombre.');return;}if(!raw){alert('Agrega sitios.');return;}
+  const sites=raw.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+    if(line.includes('|')){const p=line.split('|');const n=p[0].trim();const u=p[1].trim();const url=u.startsWith('http')?u:'https://'+u;return{name:n,url,desc:'Visita '+n+' para descubrir contenido increíble.'};}
+    const url=line.startsWith('http')?line:'https://'+line;const d=url.replace(/https?:\/\//,'').split('/')[0];return{name:d,url,desc:'Descubre '+d+'.'};
+  }).filter(s=>s.url.startsWith('http'));
+  if(!sites.length){alert('No hay URLs válidas.');return;}
+  custom[name]={emoji:selE,sites};
+  try{localStorage.setItem('sa_c',JSON.stringify(custom));}catch(e){}
+  sel.add(name);try{localStorage.setItem('sa_s',JSON.stringify([...sel]));}catch(e){}
+  closeAdd();renderTags();chk();
+}
+
+// MANAGE MODAL
+function openManage(){
+  document.getElementById('proxyUrl').value=PROXY_URL;
+  renderCC();
+  document.getElementById('manM').classList.remove('hid');
+}
+function closeManage(){document.getElementById('manM').classList.add('hid');}
+function saveProxy(){
+  PROXY_URL=document.getElementById('proxyUrl').value.trim();
+  try{localStorage.setItem('sa_proxy',PROXY_URL);}catch(e){}
+}
+function renderCC(){
+  const l=document.getElementById('ccl');l.innerHTML='';
+  if(!Object.keys(custom).length){l.innerHTML='<div class="nocc">No tienes categorías personalizadas aún.</div>';return;}
+  Object.entries(custom).forEach(([name,data])=>{
+    const d=document.createElement('div');d.className='ccitem';
+    d.innerHTML=`<span style="font-size:22px">${data.emoji}</span><div class="cci"><div class="ccn">${name}</div><div class="ccc">${data.sites.length} sitios</div></div><button class="delbtn" onclick="delcat('${name}')">✕</button>`;
+    l.appendChild(d);
+  });
+}
+function delcat(name){
+  if(!confirm('¿Eliminar "'+name+'"?'))return;
+  delete custom[name];sel.delete(name);
+  try{localStorage.setItem('sa_c',JSON.stringify(custom));}catch(e){}
+  try{localStorage.setItem('sa_s',JSON.stringify([...sel]));}catch(e){}
+  renderCC();renderTags();
+}
+
+document.getElementById('addM').onclick=e=>{if(e.target===e.currentTarget)closeAdd();};
+document.getElementById('manM').onclick=e=>{if(e.target===e.currentTarget)closeManage();};
+
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('browser').style.display==='none')return;
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+  if(e.code==='Space'){e.preventDefault();stumble();}
+  if(e.code==='Enter')openTab();
+});
+</script>
+</body>
+</html>
